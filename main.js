@@ -54,7 +54,7 @@ function calculateAllWorkersRoute() {
   }
   console.log("출발지 로드 완료: " + Object.keys(originMap).length + "명");
 
-  // 2. 도착지 데이터 맵핑 (출발지와 동일하게 이름: B열[1], 주소: C열[2] 방식 적용)
+  // 2. 도착지 데이터 맵핑 (출발지와 동일하게 이름: B열[1], 주소: C열[2]) 방식 적용
   const destMap = {};
   const destValues = destSheet.getDataRange().getValues();
   for (let i = 1; i < destValues.length; i++) {
@@ -394,6 +394,7 @@ function updateSummaryAndCompare(
     const monthlyTotalRow = lastRow - 1;
     const supportFund = existingSupportFunds[workerName] || 0;
 
+    // 수식 조건 처리: 원거리교통비(E열)가 0보다 크면 구간교통비(D열)는 0원, 차액(구간-원거리)이 0보다 크면 차액을 기타지원금(F열)에 더함
     summarySheet
       .getRange(rowIdx, 1, 1, 9)
       .setFormulas([
@@ -401,10 +402,10 @@ function updateSummaryAndCompare(
           i + 1,
           `="${workerName}"`,
           `=ROUND('${resSheetName}'!E${monthlyTotalRow}, 0)`,
-          `='${resSheetName}'!F${monthlyTotalRow}`,
+          `=IF('${resSheetName}'!G${monthlyTotalRow}>0, 0, '${resSheetName}'!F${monthlyTotalRow})`,
           `='${resSheetName}'!G${monthlyTotalRow}`,
-          supportFund,
-          `=E${rowIdx}+F${rowIdx}`,
+          `=IF(E${rowIdx}>0, MAX(0, '${resSheetName}'!F${monthlyTotalRow}-E${rowIdx}), 0) + ${supportFund}`,
+          `=D${rowIdx}+E${rowIdx}+F${rowIdx}`,
           `=VLOOKUP(B${rowIdx}, IMPORTRANGE($E$2, "'0_최종결과'!$B$5:$G$100"), 6, FALSE)`,
           `=G${rowIdx}-H${rowIdx}`,
         ],
