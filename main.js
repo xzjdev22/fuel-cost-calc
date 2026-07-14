@@ -109,7 +109,7 @@ function calculateAllWorkersRoute() {
       ],
     ]);
   if (!summarySheet.getRange("C2").getValue())
-    summarySheet.getRange("C2").setValue(1000);
+    summarySheet.getRange("C2").setValue(3000);
   if (!summarySheet.getRange("D2").getValue())
     summarySheet.getRange("D2").setValue(5100);
   summarySheet.getRange("C1:E1").setBackground("#fff2cc").setFontWeight("bold");
@@ -325,7 +325,7 @@ function processIndividualWorker(
   }
 
   const lastRow = resultSheet.getLastRow() + 1;
-  const fareFormula = `=IF(E${lastRow}=0, 0, '0_최종결과'!$C$2 * CEILING(E${lastRow}/5))`;
+  const fareFormula = `=IF(E${lastRow}=0, 0, ('0_최종결과'!$C$2 / 10) * FLOOR(E${lastRow}/1))`;
 
   resultSheet.appendRow([
     "",
@@ -404,7 +404,7 @@ function updateSummaryAndCompare(
           `='${resSheetName}'!F${monthlyTotalRow}`,
           `='${resSheetName}'!G${monthlyTotalRow}`,
           supportFund,
-          `='${resSheetName}'!G${lastRow} + F${rowIdx}`,
+          `=E${rowIdx}+F${rowIdx}`,
           `=VLOOKUP(B${rowIdx}, IMPORTRANGE($E$2, "'0_최종결과'!$B$5:$G$100"), 6, FALSE)`,
           `=G${rowIdx}-H${rowIdx}`,
         ],
@@ -426,9 +426,17 @@ function updateSummaryAndCompare(
     summarySheet.getRange(rowIdx, 2).setValue("총계");
     for (let col = 3; col <= 9; col++) {
       let colLetter = String.fromCharCode(64 + col);
-      summarySheet
-        .getRange(rowIdx, col)
-        .setFormula(`=SUM(${colLetter}5:${colLetter}${finalDataRow})`);
+      if (col === 8) {
+        summarySheet
+          .getRange(rowIdx, col)
+          .setFormula(
+            `=VLOOKUP("총계", IMPORTRANGE($E$2, "'0_최종결과'!$B$5:$G$100"), 6, FALSE)`
+          );
+      } else {
+        summarySheet
+          .getRange(rowIdx, col)
+          .setFormula(`=SUM(${colLetter}5:${colLetter}${finalDataRow})`);
+      }
     }
 
     // 3. 총계 행 디자인 적용 (배경 #34495e, 글자 흰색)
