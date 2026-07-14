@@ -103,7 +103,7 @@ function calculateAllWorkersRoute() {
     .getRange("C1:E1")
     .setValues([
       [
-        formatHeader("적용금액"),
+        formatHeader("적용금액\n(10km)"),
         formatHeader("원거리 교통비"),
         formatHeader("전월 교통비 시트(URL)"),
       ],
@@ -395,13 +395,14 @@ function updateSummaryAndCompare(
     const supportFund = existingSupportFunds[workerName] || 0;
 
     // 수식 조건 처리: 원거리교통비(E열)가 0보다 크면 구간교통비(D열)는 0원, 차액(구간-원거리)이 0보다 크면 차액을 기타지원금(F열)에 더함
+    // 총 거리는 FLOOR(내림) 처리 적용
     summarySheet
       .getRange(rowIdx, 1, 1, 9)
       .setFormulas([
         [
           i + 1,
           `="${workerName}"`,
-          `=ROUND('${resSheetName}'!E${monthlyTotalRow}, 0)`,
+          `=FLOOR('${resSheetName}'!E${monthlyTotalRow}, 1)`,
           `=IF('${resSheetName}'!G${monthlyTotalRow}>0, 0, '${resSheetName}'!F${monthlyTotalRow})`,
           `='${resSheetName}'!G${monthlyTotalRow}`,
           `=IF(E${rowIdx}>0, MAX(0, '${resSheetName}'!F${monthlyTotalRow}-E${rowIdx}), 0) + ${supportFund}`,
